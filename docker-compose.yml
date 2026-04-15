@@ -26,12 +26,15 @@ services:
       mysql:
         condition: service_healthy
     environment:
-      DB_URL: jdbc:mysql://mysql:3306/sprintflow_db?useSSL=false&serverTimezone=UTC&allowPublicKeyRetrieval=true&createDatabaseIfNotExist=true
-      DB_USERNAME: root
-      DB_PASSWORD: admin
-      CORS_ALLOWED_ORIGINS: http://localhost:8080
+      SPRING_DATASOURCE_URL: jdbc:mysql://mysql:3306/sprintflow_db?useSSL=false&serverTimezone=UTC&allowPublicKeyRetrieval=true
+      SPRING_DATASOURCE_USERNAME: root
+      SPRING_DATASOURCE_PASSWORD: admin
+      SPRING_JPA_HIBERNATE_DDL_AUTO: update
+      SPRING_MAIN_ALLOW_CIRCULAR_REFERENCES: "true"
+      CORS_ALLOWED_ORIGINS: "http://localhost,http://107.23.191.97"
     ports:
-      - "8081:8080"
+      - "8080:8080"
+    # No healthcheck (curl not available)
 
   frontend:
     build:
@@ -40,9 +43,9 @@ services:
     container_name: sprintflow-frontend
     restart: unless-stopped
     depends_on:
-      - backend
+      - backend   # simple dependency, no condition
     ports:
-      - "8080:80"
+      - "80:80"
 
 volumes:
   mysql_data:

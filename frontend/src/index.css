@@ -1,0 +1,22 @@
+
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  html {
+    font-size: 17px;
+  }
+  body {
+    @apply text-base text-gray-800 leading-relaxed;
+    background: #efefef;
+  }
+  h1 { @apply text-3xl font-bold tracking-tight; }
+  h2 { @apply text-2xl font-semibold; }
+  h3 { @apply text-xl font-semibold; }
+  /* Tables — readable without squinting */
+  th { @apply text-[0.85rem] font-semibold; }
+  td { @apply text-[0.85rem]; }
+  /* Inputs, selects, buttons inherit body size */
+  input, select, textarea, button { font-size: inherit; }
+}

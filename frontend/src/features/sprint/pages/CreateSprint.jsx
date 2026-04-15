@@ -1,0 +1,470 @@
+import { motion } from "framer-motion";
+import { useForm } from "react-hook-form";
+import { zodResolver } from "@hookform/resolvers/zod";
+import { z } from "zod";
+import { useNavigate } from "react-router-dom";
+import {
+  Form,
+  FormField,
+  FormItem,
+  FormLabel,
+  FormControl,
+  FormMessage,
+} from "@/components/ui/form";
+import {
+  Select,
+  SelectTrigger,
+  SelectValue,
+  SelectContent,
+  SelectItem,
+} from "@/components/ui/select";
+import { Textarea } from "@/components/ui/textarea";
+import { useSprints } from "@/context/SprintContext";
+import { useAppData } from "@/context/AppDataContext";
+import { ALL_COHORT_OPTIONS } from "@/constants/cohortLabels";
+import { shortCohort } from "@/lib/cohortUtils";
+import { T } from "@/theme/trainer";
+
+const formSchema = z
+  .object({
+    title: z.string().min(1, "Title is required"),
+    trainer: z.string().min(1, "Trainer is required"),
+    startDate: z.string().min(1, "Start date required"),
+    endDate: z.string().min(1, "End date required"),
+    sprintStart: z.string().min(1, "Start time is required"),
+    sprintEnd: z.string().min(1, "End time is required"),
+    room: z.string().min(1, "Room is required"),
+    cohort: z.string().min(1, "Cohort is required"),
+    instructions: z.string().optional(),
+  })
+  .refine((d) => d.endDate >= d.startDate, {
+    message: "End date must be on or after start date",
+    path: ["endDate"],
+  });
+
+const TIME_OPTIONS = [
+  "08:00 AM",
+  "09:00 AM",
+  "10:00 AM",
+  "11:00 AM",
+  "12:00 PM",
+  "01:00 PM",
+  "02:00 PM",
+  "03:00 PM",
+  "04:00 PM",
+  "05:00 PM",
+  "06:00 PM",
+];
+
+const inp = {
+  background: T.card,
+  border: `1.5px solid ${T.border}`,
+  borderRadius: 10,
+  color: T.text,
+  padding: "9px 13px",
+  fontSize: 13,
+  outline: "none",
+  width: "100%",
+  boxSizing: "border-box",
+  fontFamily: "inherit",
+};
+
+const lbl = {
+  color: T.muted,
+  fontSize: 11,
+  fontWeight: 700,
+  textTransform: "uppercase",
+  letterSpacing: "0.07em",
+  display: "block",
+  marginBottom: 5,
+};
+
+const selStyle = {
+  background: T.card,
+  border: `1.5px solid ${T.border}`,
+  borderRadius: 10,
+  color: T.text,
+  height: 40,
+  fontSize: 13,
+  width: "100%",
+};
+
+const CreateSprint = () => {
+  const { addSprint } = useSprints();
+  const { trainers, cohortNames } = useAppData();
+  const navigate = useNavigate();
+
+  const form = useForm({
+    resolver: zodResolver(formSchema),
+    defaultValues: {
+      title: "",
+      trainer: "",
+      startDate: "",
+      endDate: "",
+      sprintStart: "09:00 AM",
+      sprintEnd: "05:00 PM",
+      room: "",
+      cohort: "",
+      instructions: "",
+    },
+  });
+
+  const onSubmit = (data) => {
+    addSprint(data);
+    navigate("/sprints");
+  };
+
+  return (
+    <motion.div
+      initial={{ opacity: 0, scale: 0.98 }}
+      animate={{ opacity: 1, scale: 1 }}
+      transition={{ duration: 0.4 }}
+      style={{ background: T.bg, minHeight: "100vh", padding: "28px 24px" }}
+    >
+      <div
+        style={{
+          maxWidth: 720,
+          margin: "0 auto",
+          display: "flex",
+          flexDirection: "column",
+          gap: 24,
+        }}
+      >
+        {/* Header */}
+        <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
+          <div
+            style={{
+              width: 4,
+              height: 28,
+              background: T.accent,
+              borderRadius: 2,
+            }}
+          />
+          <div>
+            <h1
+              style={{
+                color: T.text,
+                fontSize: 22,
+                fontWeight: 800,
+                margin: 0,
+              }}
+            >
+              Create Sprint
+            </h1>
+            <p style={{ color: T.muted, fontSize: 12, margin: 0 }}>
+              Fill in the details to schedule a new sprint.
+            </p>
+          </div>
+        </div>
+
+        {/* Form Card */}
+        <div
+          style={{
+            background: T.card,
+            border: `1.5px solid ${T.border}`,
+            borderRadius: 18,
+            overflow: "hidden",
+            boxShadow: T.shadow,
+          }}
+        >
+          <div style={{ height: 3, background: T.line }} />
+          <div style={{ padding: "28px 28px 32px" }}>
+            <Form {...form}>
+              <form
+                onSubmit={form.handleSubmit(onSubmit)}
+                style={{ display: "flex", flexDirection: "column", gap: 20 }}
+              >
+                {/* Title + Trainer */}
+                <div
+                  style={{
+                    display: "grid",
+                    gridTemplateColumns: "1fr 1fr",
+                    gap: 16,
+                  }}
+                >
+                  <FormField
+                    control={form.control}
+                    name="title"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel style={lbl}>Sprint Title</FormLabel>
+                        <FormControl>
+                          <input
+                            placeholder="e.g. React Advanced Training"
+                            {...field}
+                            style={inp}
+                            onFocus={(e) =>
+                              (e.target.style.borderColor = T.accent)
+                            }
+                            onBlur={(e) =>
+                              (e.target.style.borderColor = T.border)
+                            }
+                          />
+                        </FormControl>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+                  <FormField
+                    control={form.control}
+                    name="trainer"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel style={lbl}>Trainer</FormLabel>
+                        {/* Trainers come from AppData (backend) */}
+                        <Select
+                          onValueChange={field.onChange}
+                          value={field.value}
+                        >
+                          <FormControl>
+                            <SelectTrigger style={selStyle}>
+                              <SelectValue placeholder="Select trainer" />
+                            </SelectTrigger>
+                          </FormControl>
+                          <SelectContent>
+                            {(trainers || []).map((t) => (
+                              <SelectItem key={t.id ?? t.name} value={t.name || t}>
+                                {t.name || t}
+                              </SelectItem>
+                            ))}
+                          </SelectContent>
+                        </Select>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+                </div>
+
+                {/* Dates */}
+                <div
+                  style={{
+                    display: "grid",
+                    gridTemplateColumns: "1fr 1fr",
+                    gap: 16,
+                  }}
+                >
+                  {["startDate", "endDate"].map((name) => (
+                    <FormField
+                      key={name}
+                      control={form.control}
+                      name={name}
+                      render={({ field }) => (
+                        <FormItem>
+                          <FormLabel style={lbl}>
+                            {name === "startDate" ? "Start Date" : "End Date"}
+                          </FormLabel>
+                          <FormControl>
+                            <input
+                              type="date"
+                              {...field}
+                              style={inp}
+                              onFocus={(e) =>
+                                (e.target.style.borderColor = T.accent)
+                              }
+                              onBlur={(e) =>
+                                (e.target.style.borderColor = T.border)
+                              }
+                            />
+                          </FormControl>
+                          <FormMessage />
+                        </FormItem>
+                      )}
+                    />
+                  ))}
+                </div>
+
+                {/* Times */}
+                <div
+                  style={{
+                    display: "grid",
+                    gridTemplateColumns: "1fr 1fr",
+                    gap: 16,
+                  }}
+                >
+                  {["sprintStart", "sprintEnd"].map((name) => (
+                    <FormField
+                      key={name}
+                      control={form.control}
+                      name={name}
+                      render={({ field }) => (
+                        <FormItem>
+                          <FormLabel style={lbl}>
+                            {name === "sprintStart" ? "Start Time" : "End Time"}
+                          </FormLabel>
+                          <Select
+                            onValueChange={field.onChange}
+                            value={field.value}
+                          >
+                            <FormControl>
+                              <SelectTrigger style={selStyle}>
+                                <SelectValue placeholder="Select time" />
+                              </SelectTrigger>
+                            </FormControl>
+                            <SelectContent>
+                              {TIME_OPTIONS.map((t) => (
+                                <SelectItem key={t} value={t}>
+                                  {t}
+                                </SelectItem>
+                              ))}
+                            </SelectContent>
+                          </Select>
+                          <FormMessage />
+                        </FormItem>
+                      )}
+                    />
+                  ))}
+                </div>
+
+                {/* Room + Cohort */}
+                <div
+                  style={{
+                    display: "grid",
+                    gridTemplateColumns: "1fr 1fr",
+                    gap: 16,
+                  }}
+                >
+                  <FormField
+                    control={form.control}
+                    name="room"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel style={lbl}>Room</FormLabel>
+                        <FormControl>
+                          <input
+                            placeholder="Enter room/location"
+                            {...field}
+                            style={inp}
+                            onFocus={(e) =>
+                              (e.target.style.borderColor = T.accent)
+                            }
+                            onBlur={(e) =>
+                              (e.target.style.borderColor = T.border)
+                            }
+                          />
+                        </FormControl>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+                  <FormField
+                    control={form.control}
+                    name="cohort"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel style={lbl}>Cohort</FormLabel>
+                        <Select
+                          onValueChange={field.onChange}
+                          value={field.value}
+                        >
+                          <FormControl>
+                            <SelectTrigger style={selStyle}>
+                              <SelectValue placeholder="Select cohort" />
+                            </SelectTrigger>
+                          </FormControl>
+                          <SelectContent>
+                            {(cohortNames?.length ? cohortNames : ALL_COHORT_OPTIONS).map((c) => (
+                              <SelectItem key={c} value={c} title={c}>
+                                {shortCohort(c)}
+                              </SelectItem>
+                            ))}
+                          </SelectContent>
+                        </Select>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+                </div>
+
+                {/* Instructions */}
+                <FormField
+                  control={form.control}
+                  name="instructions"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel style={lbl}>
+                        Instructions{" "}
+                        <span
+                          style={{
+                            textTransform: "none",
+                            fontWeight: 400,
+                            color: T.muted,
+                          }}
+                        >
+                          (optional)
+                        </span>
+                      </FormLabel>
+                      <FormControl>
+                        <Textarea
+                          placeholder="Any notes or instructions for this sprint..."
+                          rows={3}
+                          {...field}
+                          style={{
+                            ...inp,
+                            resize: "vertical",
+                            minHeight: 80,
+                            padding: "10px 13px",
+                          }}
+                        />
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+
+                {/* Actions */}
+                <div style={{ display: "flex", gap: 12, paddingTop: 4 }}>
+                  <button
+                    type="submit"
+                    style={{
+                      padding: "10px 28px",
+                      borderRadius: 12,
+                      background: T.accent,
+                      color: "#fff",
+                      fontWeight: 700,
+                      fontSize: 14,
+                      border: "none",
+                      cursor: "pointer",
+                      boxShadow: T.accentGlow,
+                      transition: "opacity 0.15s",
+                    }}
+                    onMouseEnter={(e) =>
+                      (e.currentTarget.style.opacity = "0.88")
+                    }
+                    onMouseLeave={(e) => (e.currentTarget.style.opacity = "1")}
+                  >
+                    Create Sprint
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => navigate("/sprints")}
+                    style={{
+                      padding: "10px 22px",
+                      borderRadius: 12,
+                      background: "transparent",
+                      color: T.sub,
+                      fontWeight: 600,
+                      fontSize: 14,
+                      border: `1.5px solid ${T.border}`,
+                      cursor: "pointer",
+                      transition: "background 0.12s",
+                    }}
+                    onMouseEnter={(e) =>
+                      (e.currentTarget.style.background = T.bg)
+                    }
+                    onMouseLeave={(e) =>
+                      (e.currentTarget.style.background = "transparent")
+                    }
+                  >
+                    Cancel
+                  </button>
+                </div>
+              </form>
+            </Form>
+          </div>
+        </div>
+      </div>
+    </motion.div>
+  );
+};
+
+export default CreateSprint;
