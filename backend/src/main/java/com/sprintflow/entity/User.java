@@ -45,9 +45,6 @@ public class User {
     @Column(name = "updated_at")
     private LocalDateTime updatedAt = LocalDateTime.now();
     
-    @Column(name = "deleted_at")
-    private LocalDateTime deletedAt;
-    
     @OneToMany(mappedBy = "trainer", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
     private Set<Sprint> trainedSprints;
     
@@ -163,14 +160,6 @@ public class User {
     
     public void setUpdatedAt(LocalDateTime updatedAt) {
         this.updatedAt = updatedAt;
-    }
-    
-    public LocalDateTime getDeletedAt() {
-        return deletedAt;
-    }
-    
-    public void setDeletedAt(LocalDateTime deletedAt) {
-        this.deletedAt = deletedAt;
     }
     
     public Set<Sprint> getTrainedSprints() {

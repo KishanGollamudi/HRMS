@@ -59,6 +59,22 @@ public class GlobalExceptionHandler {
         
         return new ResponseEntity<>(response, HttpStatus.CONFLICT);
     }
+
+    @ExceptionHandler(IllegalArgumentException.class)
+    public ResponseEntity<ApiResponseDTO<?>> handleIllegalArgumentException(
+            IllegalArgumentException ex, WebRequest request) {
+
+        ApiResponseDTO<?> response = ApiResponseDTO.builder()
+                .success(false)
+                .message(ex.getMessage())
+                .statusCode(HttpStatus.BAD_REQUEST.value())
+                .error("Bad Request")
+                .timestamp(LocalDateTime.now())
+                .path(request.getDescription(false).replace("uri=", ""))
+                .build();
+
+        return new ResponseEntity<>(response, HttpStatus.BAD_REQUEST);
+    }
     
     @ExceptionHandler(Exception.class)
     public ResponseEntity<ApiResponseDTO<?>> handleGlobalException(

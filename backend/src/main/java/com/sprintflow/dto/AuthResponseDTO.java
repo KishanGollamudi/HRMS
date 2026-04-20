@@ -9,6 +9,7 @@ public class AuthResponseDTO {
     private String firstName;
     private String lastName;
     private String role;
+    private boolean active;
     private long expiresIn;
     
     // Constructors
@@ -90,7 +91,15 @@ public class AuthResponseDTO {
     public void setRole(String role) {
         this.role = role;
     }
+
+    public boolean isActive() {
+        return active;
+    }
     
+    public void setActive(boolean active) {
+        this.active = active;
+    }
+
     public long getExpiresIn() {
         return expiresIn;
     }
@@ -98,9 +107,4 @@ public class AuthResponseDTO {
     public void setExpiresIn(long expiresIn) {
         this.expiresIn = expiresIn;
     }
-
-	public void setActive(boolean active) {
-		// TODO Auto-generated method stub
-		
-	}
 }
