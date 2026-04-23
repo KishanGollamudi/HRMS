@@ -1,4 +1,4 @@
-# HRMS Database Schema Guide
+# SprintFlow Database Schema Guide
 
 This project uses a MySQL 8 container from [`docker-compose.yml`](/home/kishan/Downloads/HRMS/docker-compose.yml).
 
